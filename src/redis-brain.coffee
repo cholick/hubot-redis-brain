@@ -19,9 +19,6 @@ module.exports = (robot) ->
              else if process.env.REDISCLOUD_URL?
                redisUrlEnv = "REDISCLOUD_URL"
                process.env.REDISCLOUD_URL
-             else if process.env.BOXEN_REDIS_URL?
-               redisUrlEnv = "BOXEN_REDIS_URL"
-               process.env.BOXEN_REDIS_URL
              else if process.env.REDIS_URL?
                redisUrlEnv = "REDIS_URL"
                process.env.REDIS_URL

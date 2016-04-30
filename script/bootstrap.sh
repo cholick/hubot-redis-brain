@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/bash -e
 
 # Make sure everything is development forever
 export NODE_ENV=development
 
 # Load environment specific environment variables
-if [ -f .env ]; then 
+if [ -f .env ]; then
   source .env
 fi
 
