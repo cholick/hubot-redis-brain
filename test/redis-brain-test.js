@@ -1,9 +1,9 @@
-const chai = require('chai');
-const sinon = require('sinon');
+const chai = require("chai");
+const sinon = require("sinon");
 
 const assert = chai.assert;
 
-describe('redis-brain', function () {
+describe("redis-brain", function () {
     var robot;
 
     beforeEach(function () {
@@ -18,11 +18,15 @@ describe('redis-brain', function () {
                 info: sinon.stub()
             }
         };
-        require('../src/redis-brain')(robot);
+        require("../src/redis-brain")(robot);
     });
 
-    return it('sets auto save to false', function () {
+    it("sets auto save to false", function () {
         assert.equal(robot.brain.setAutoSave.callCount, 1);
         assert.ok(robot.brain.setAutoSave.calledWith(false));
+    });
+
+    it("", function () {
+
     });
 });

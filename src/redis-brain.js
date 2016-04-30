@@ -2,7 +2,7 @@ const Url = require("url");
 const Redis = require("redis");
 
 module.exports = function (robot) {
-    var redisUrl = 'redis://localhost:6379';
+    var redisUrl = "redis://localhost:6379";
     var redisUrlEnv = undefined;
     ["REDISTOGO_URL", "BOXEN_REDIS_URL", "REDISCLOUD_URL", "REDIS_URL"].forEach(function (potentialEnvValue) {
         if (process.env[potentialEnvValue]) {
@@ -25,15 +25,15 @@ module.exports = function (robot) {
         client = Redis.createClient(info.port, info.hostname);
     }
 
-    var prefix = 'hubot';
+    var prefix = "hubot";
     if (info.path) {
-        prefix = info.path.replace('/', '')
+        prefix = info.path.replace("/", "")
     }
 
     robot.brain.setAutoSave(false);
 
     function getData() {
-        return client.get(prefix + ":storage", function (err, reply) {
+        client.get(prefix + ":storage", function (err, reply) {
             if (err) {
                 throw err;
             } else if (reply) {
@@ -43,17 +43,17 @@ module.exports = function (robot) {
                 robot.logger.info("hubot-redis-brain: Initializing new data for " + prefix + " brain");
                 robot.brain.mergeData({});
             }
-            return robot.brain.setAutoSave(true);
+            robot.brain.setAutoSave(true);
         });
     }
 
     if (info.auth) {
         client.auth(info.auth.split(":")[1], function (err) {
             if (err) {
-                return robot.logger.error("hubot-redis-brain: Failed to authenticate to Redis");
+                robot.logger.error("hubot-redis-brain: Failed to authenticate to Redis");
             } else {
                 robot.logger.info("hubot-redis-brain: Successfully authenticated to Redis");
-                return getData();
+                getData();
             }
         });
     }
@@ -62,25 +62,25 @@ module.exports = function (robot) {
         if (/ECONNREFUSED/.test(err.message)) {
 
         } else {
-            return robot.logger.error(err.stack);
+            robot.logger.error(err.stack);
         }
     });
 
     client.on("connect", function () {
         robot.logger.debug("hubot-redis-brain: Successfully connected to Redis");
         if (!info.auth) {
-            return getData();
+            getData();
         }
     });
 
-    robot.brain.on('save', function (data) {
+    robot.brain.on("save", function (data) {
         if (data == null) {
             data = {};
         }
-        return client.set(prefix + ":storage", JSON.stringify(data));
+        client.set(prefix + ":storage", JSON.stringify(data));
     });
 
-    return robot.brain.on('close', function () {
-        return client.quit();
+    robot.brain.on("close", function () {
+        client.quit();
     });
 };
