@@ -17,7 +17,8 @@ module.exports = function (robot) {
     var redisUrlEnv = undefined;
     ["REDISTOGO_URL", "BOXEN_REDIS_URL", "REDISCLOUD_URL", "REDIS_URL"].forEach(function (potentialEnvValue) {
         if (process.env[potentialEnvValue]) {
-            redisUrl = redisUrlEnv = potentialEnvValue;
+            redisUrlEnv = potentialEnvValue;
+            redisUrl = redisUrlEnv;
         }
     });
     if (redisUrlEnv != null) {
@@ -25,6 +26,7 @@ module.exports = function (robot) {
     } else {
         robot.logger.info("hubot-redis-brain: Using default redis on localhost:6379");
     }
+    robot.logger.info("Connecting to", redisUrl);
 
     var client;
     var info = url.parse(redisUrl, true);
