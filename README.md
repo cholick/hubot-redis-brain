@@ -2,13 +2,17 @@
 
 A hubot script to persist hubot's brain using redis
 
-See [`src/redis-brain.coffee`](src/redis-brain.coffee) for full documentation.
+See [`src/redis-brain.js`](src/redis-brain.js).
+
+Fork of https://github.com/hubot-scripts/hubot-redis-brain to
+encrypt data at rest: hubot is likely storing the type of
+thing you'd want to encrypt.
 
 ## Installation
 
-In hubot project repo, run:
+In the hubot project repo, run:
 
-`npm install hubot-redis-brain --save`
+`npm install cholick/hubot-redis-brain --save`
 
 Then add **hubot-redis-brain** to your `external-scripts.json`:
 
@@ -16,6 +20,15 @@ Then add **hubot-redis-brain** to your `external-scripts.json`:
 [
   "hubot-redis-brain"
 ]
+```
+
+#### Local
+
+Change the package dependency to
+```
+...
+"hubot-redis-brain": "file:../hubot-redis-brain"
+...
 ```
 
 ## Configuration
@@ -34,30 +47,20 @@ For example, `export REDIS_URL=redis://passwd@192.168.0.1:16379/prefix` would
 authenticate with `password`, connecting to 192.168.0.1 on port 16379, and store
 data using the `prefix:storage` key.
 
+Symmetric encryption also requires a key stored in `REDIS_CRYPT`.
+
+**Note** changing the key will destroy existing data.
+
 ### Installing your own
 
-If you need to install and
-run your own, most package managers have a package for redis:
+If you need to install and run your own, most package managers have a package for redis:
 
+* Docker `docker run -p 6379:6379 --name hubot-redis -d redis` 
 * Mac OS X with homebrew: `brew install redis`
 * Ubuntu/Debian with apt: `apt-get install redis-server`
 * Compile from source: http://redis.io/topics/quickstart
 
-### Boxen
+### Providers
 
-If you are using [boxen](https://boxen.github.com/) to manage your environment,
-hubot-redis-brain will automatically use the boxen-managed redis (ie by using `BOXEN_REDIS_URL`).
-
-
-### Heroku
-
-If you are deploying on [Heroku](https://www.heroku.com/), you can add the
-Redis Cloud or Redis To Go addon to have automatically configure itself to use it:
-
-* [Redis Cloud](https://addons.heroku.com/rediscloud)
-* [Redis To Go](https://addons.heroku.com/redistogo)
-
-
-Other redis addons would need to be configured using `REDIS_URL` until support
-is added to hubot-redis-brain (or hubot-redis-brain needs to be updated to look
-  for the environment variable the service uses)
+* [Redis Cloud](https://redislabs.com/redis-cloud)
+* [Redis To Go](http://redistogo.com/)

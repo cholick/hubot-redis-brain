@@ -1,7 +1,18 @@
-const Url = require("url");
-const Redis = require("redis");
+// Description:
+//  Store data in Redis
+
+const url = require("url");
+const redis = require("redis");
+const crypt = require("./support/crypt");
 
 module.exports = function (robot) {
+    const key = process.env["REDIS_CRYPT"];
+    if (!key) {
+        var error = "Symmetric key is expected in variable `REDIS_CRYPT`";
+        robot.logger.error(error);
+        throw error;
+    }
+
     var redisUrl = "redis://localhost:6379";
     var redisUrlEnv = undefined;
     ["REDISTOGO_URL", "BOXEN_REDIS_URL", "REDISCLOUD_URL", "REDIS_URL"].forEach(function (potentialEnvValue) {
@@ -16,18 +27,18 @@ module.exports = function (robot) {
     }
 
     var client;
-    var info = Url.parse(redisUrl, true);
+    var info = url.parse(redisUrl, true);
     if (info.auth) {
-        client = Redis.createClient(info.port, info.hostname, {
+        client = redis.createClient(info.port, info.hostname, {
             no_ready_check: true
         });
     } else {
-        client = Redis.createClient(info.port, info.hostname);
+        client = redis.createClient(info.port, info.hostname);
     }
 
     var prefix = "hubot";
     if (info.path) {
-        prefix = info.path.replace("/", "")
+        prefix = info.path.replace("/", "");
     }
 
     robot.brain.setAutoSave(false);
@@ -37,8 +48,10 @@ module.exports = function (robot) {
             if (err) {
                 throw err;
             } else if (reply) {
+                var data = JSON.parse(crypt.decrypt(reply.toString(), key));
+
                 robot.logger.info("hubot-redis-brain: Data for " + prefix + " brain retrieved from Redis");
-                robot.brain.mergeData(JSON.parse(reply.toString()));
+                robot.brain.mergeData(data);
             } else {
                 robot.logger.info("hubot-redis-brain: Initializing new data for " + prefix + " brain");
                 robot.brain.mergeData({});
@@ -53,21 +66,16 @@ module.exports = function (robot) {
                 robot.logger.error("hubot-redis-brain: Failed to authenticate to Redis");
             } else {
                 robot.logger.info("hubot-redis-brain: Successfully authenticated to Redis");
-                getData();
             }
         });
     }
 
     client.on("error", function (err) {
-        if (/ECONNREFUSED/.test(err.message)) {
-
-        } else {
-            robot.logger.error(err.stack);
-        }
+        robot.logger.error(err);
     });
 
     client.on("connect", function () {
-        robot.logger.debug("hubot-redis-brain: Successfully connected to Redis");
+        robot.logger.info("hubot-redis-brain: Successfully connected to Redis");
         if (!info.auth) {
             getData();
         }
@@ -77,7 +85,9 @@ module.exports = function (robot) {
         if (data == null) {
             data = {};
         }
-        client.set(prefix + ":storage", JSON.stringify(data));
+
+        var encrypted = crypt.encrypt(JSON.stringify(data), key);
+        client.set(prefix + ":storage", encrypted);
     });
 
     robot.brain.on("close", function () {
